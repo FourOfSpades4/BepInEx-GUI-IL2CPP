@@ -16,6 +16,8 @@ internal class SendLogToClientSocket : ILogListener
 
     private bool _isDisposed = false;
 
+    public LogLevel LogLevelFilter { get => LogLevel.All; }
+
     internal static SendLogToClientSocket Instance { get; private set; }
 
     internal SendLogToClientSocket(int freePort)
@@ -34,7 +36,7 @@ internal class SendLogToClientSocket : ILogListener
 
             while (true)
             {
-                Log.Info($"[SendLogToClient] Accepting Socket.");
+                EntryPoint.Log.LogInfo($"[SendLogToClient] Accepting Socket.");
                 var clientSocket = listener.AcceptSocket();
 
                 if (_isDisposed)
@@ -73,7 +75,7 @@ internal class SendLogToClientSocket : ILogListener
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Error while trying to send log to socket: {e}{Environment.NewLine}Disconnecting socket.");
+                    EntryPoint.Log.LogError($"Error while trying to send log to socket: {e}{Environment.NewLine}Disconnecting socket.");
                     return;
                 }
 
@@ -101,6 +103,11 @@ internal class SendLogToClientSocket : ILogListener
     private bool _gotFirstLog = false;
     public void LogEvent(object sender, LogEventArgs eventArgs)
     {
+        if (eventArgs.Data.ToString().StartsWith("TEST: "))
+            return;
+        EntryPoint.Log.LogInfo("TEST: " + eventArgs.Level.ToString() + " " + eventArgs.Source.SourceName + " " + eventArgs.Data.ToString());
+
+
         if (_isDisposed)
         {
             return;
@@ -114,7 +121,7 @@ internal class SendLogToClientSocket : ILogListener
         if (!_gotFirstLog)
         {
             if (eventArgs.Level == LogLevel.Message &&
-                eventArgs.Source.SourceName == "BepInEx" &&
+                eventArgs.Source.SourceName == "Preloader" &&
                 eventArgs.Data.ToString().StartsWith("BepInEx"))
             {
                 _gotFirstLog = true;

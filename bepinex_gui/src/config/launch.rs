@@ -41,14 +41,14 @@ impl AppLaunchConfig {
     }
 
     pub fn default() -> Self {
-        let bepinex_version_string = "5.4.19";
-        let target_name = "Risk of Rain 2";
+        let target_name = "GAME_NAME";
+        let bepinex_version_string = "6.0.674";
 
         Self {
             target_name : target_name.into(),
-            game_folder_full_path: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Risk of Rain 2".into(),
-            bepinex_log_output_file_full_path: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Risk of Rain 2\\BepInEx\\LogOutput.log".into(),
-            bepinex_gui_csharp_cfg_full_path: "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Risk of Rain 2\\BepInEx\\config\\BepInEx.GUI.cfg".into(),
+            game_folder_full_path: "GAME_PATH".into(),
+            bepinex_log_output_file_full_path: "GAME_PATH\\BepInEx\\LogOutput.log".into(),
+            bepinex_gui_csharp_cfg_full_path: "GAME_PATH\\BepInEx\\config\\BepInEx.GUI.cfg".into(),
             target_process_id: Pid::from(17584),
             log_socket_port_receiver: 27090,
             window_title : app::NAME.to_owned() + " " + bepinex_version_string + " - " + target_name,

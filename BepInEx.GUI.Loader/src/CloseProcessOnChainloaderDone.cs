@@ -9,6 +9,8 @@ public class CloseProcessOnChainloaderDone : ILogListener
 
     private Process _process;
 
+    public LogLevel LogLevelFilter { get => LogLevel.All; }
+
     public CloseProcessOnChainloaderDone(Process process) => _process = process;
 
     public void Dispose()
@@ -27,7 +29,7 @@ public class CloseProcessOnChainloaderDone : ILogListener
         {
             if (Config.CloseWindowWhenGameLoadedConfig.Value)
             {
-                Log.Message("Closing BepInEx.GUI");
+                EntryPoint.Log.LogInfo("Closing BepInEx.GUI");
                 KillBepInExGUIProcess();
             }
         }
@@ -41,8 +43,7 @@ public class CloseProcessOnChainloaderDone : ILogListener
         }
         catch (Exception e)
         {
-            Log.Error($"Error while trying to kill BepInEx GUI Process: {e}");
-            Log.Error(e);
+            EntryPoint.Log.LogError($"Error while trying to kill BepInEx GUI Process: {e}");
         }
         finally
         {

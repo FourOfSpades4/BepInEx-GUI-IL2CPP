@@ -9,32 +9,34 @@ using BepInEx.Configuration;
 using System.Reflection;
 using BepInEx.Logging;
 using Mono.Cecil;
+using BepInEx.Preloader.Core.Patching;
 
 namespace BepInEx.GUI.Loader;
 
-internal static class EntryPoint
+
+[PatcherPluginInfo("com.bepinex.gui", "BepInEx GUI", "1.0.0")]
+public class EntryPoint : BasePatcher
 {
     public static IEnumerable<string> TargetDLLs { get; } = Array.Empty<string>();
 
-    public static void Patch(AssemblyDefinition _) { }
+    public static ManualLogSource Log { get; private set; }
 
-    public static void Initialize()
+    public override void Initialize()
     {
-        Log.Init();
-
+        Log = base.Log;
         try
         {
             InitializeInternal();
         }
         catch (Exception e)
         {
-            Log.Error($"Failed to initialize : ({e.GetType()}) {e.Message}{Environment.NewLine}{e}");
+            Log.LogError($"Failed to initialize : ({e.GetType()}) {e.Message}{Environment.NewLine}{e}");
         }
     }
 
-    private static void InitializeInternal()
+    private void InitializeInternal()
     {
-        Config.Init(Paths.ConfigPath);
+        Loader.Config.Init(Paths.ConfigPath);
 
         var consoleConfig = (ConfigEntry<bool>)typeof(BepInPlugin).Assembly.
             GetType("BepInEx.ConsoleManager", true).
@@ -43,19 +45,20 @@ internal static class EntryPoint
 
         if (consoleConfig.Value)
         {
-            Log.Info("BepInEx regular console is enabled, aborting launch.");
+            Log.LogInfo(GetLogOutputFilePath());
+            Log.LogInfo("BepInEx regular console is enabled, aborting launch.");
         }
-        else if (Config.EnableBepInExGUIConfig.Value)
+        else if (Loader.Config.EnableBepInExGUIConfig.Value)
         {
             FindAndLaunchGUI();
         }
         else
         {
-            Log.Info("Custom BepInEx.GUI is disabled in the config, aborting launch.");
+            Log.LogInfo("Custom BepInEx.GUI is disabled in the config, aborting launch.");
         }
     }
 
-    private static string FindGUIExecutable()
+    private string FindGUIExecutable()
     {
         foreach (var filePath in Directory.GetFiles(Paths.PatcherPluginPath, "*", SearchOption.AllDirectories))
         {
@@ -72,7 +75,7 @@ internal static class EntryPoint
                 var versInfo = FileVersionInfo.GetVersionInfo(filePath);
                 if (versInfo.FileMajorPart == 3)
                 {
-                    Log.Info($"Found bepinex_gui v3 executable in {filePath}");
+                    Log.LogInfo($"Found bepinex_gui v3 executable in {filePath}");
                     return filePath;
                 }
             }
@@ -81,9 +84,9 @@ internal static class EntryPoint
         return null;
     }
 
-    private static void FindAndLaunchGUI()
+    private void FindAndLaunchGUI()
     {
-        Log.Info("Finding and launching GUI");
+        Log.LogInfo("Finding and launching GUI");
 
         var executablePath = FindGUIExecutable();
         if (executablePath != null)
@@ -97,16 +100,16 @@ internal static class EntryPoint
             }
             else
             {
-                Log.Info("LaunchGUI failed");
+                Log.LogInfo("LaunchGUI failed");
             }
         }
         else
         {
-            Log.Info("bepinex_gui executable not found.");
+            Log.LogInfo("bepinex_gui executable not found.");
         }
     }
 
-    private static int FindFreePort()
+    private int FindFreePort()
     {
         int port = 0;
         Socket socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -125,7 +128,7 @@ internal static class EntryPoint
         return port;
     }
 
-    private static Process LaunchGUI(string executablePath, int socketPort)
+    private Process LaunchGUI(string executablePath, int socketPort)
     {
         var processStartInfo = new ProcessStartInfo();
         processStartInfo.FileName = executablePath;
@@ -136,7 +139,7 @@ internal static class EntryPoint
             $"\"{Paths.ProcessName}\" " +
             $"\"{Paths.GameRootPath}\" " +
             $"\"{GetLogOutputFilePath()}\" " +
-            $"\"{Config.ConfigFilePath}\" " +
+            $"\"{Loader.Config.ConfigFilePath}\" " +
             $"\"{Process.GetCurrentProcess().Id}\" " +
             $"\"{socketPort}\"";
 
@@ -144,13 +147,14 @@ internal static class EntryPoint
     }
 
     // Bad and hacky way to retrieve the correct log file path
-    private static string GetLogOutputFilePath()
+    private string GetLogOutputFilePath()
     {
+        return "C:\\Program Files\\Oculus\\Software\\Software\\orbus-online-llc-orbusvr\\BepInEx\\LogOutput.log";
         foreach (var logListener in Logger.Listeners)
         {
             if (logListener is DiskLogListener diskLogListener)
             {
-                return diskLogListener.FileFullPath;
+                return diskLogListener.ToString();
             }
         }
 
