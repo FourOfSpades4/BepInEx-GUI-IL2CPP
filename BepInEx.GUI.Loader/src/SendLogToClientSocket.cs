@@ -103,11 +103,6 @@ internal class SendLogToClientSocket : ILogListener
     private bool _gotFirstLog = false;
     public void LogEvent(object sender, LogEventArgs eventArgs)
     {
-        if (eventArgs.Data.ToString().StartsWith("TEST: "))
-            return;
-        EntryPoint.Log.LogInfo("TEST: " + eventArgs.Level.ToString() + " " + eventArgs.Source.SourceName + " " + eventArgs.Data.ToString());
-
-
         if (_isDisposed)
         {
             return;
