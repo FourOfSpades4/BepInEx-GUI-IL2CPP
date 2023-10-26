@@ -10,6 +10,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using Mono.Cecil;
 using BepInEx.Preloader.Core.Patching;
+using System.Runtime;
 
 namespace BepInEx.GUI.Loader;
 
@@ -149,6 +150,6 @@ public class EntryPoint : BasePatcher
     // diskLogListener.FullFilePath was removed in BepInEx 6
     private string GetLogOutputFilePath()
     {
-        return "GAME_PATH\\BepInEx\\LogOutput.log";
+        return Path.GetFullPath(".\\BepInEx\\LogOutput.log");
     }
 }

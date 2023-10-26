@@ -31,5 +31,10 @@
       <HintPath>..\lib\BepInEx.Unity.IL2CPP.dll</HintPath>
     </Reference>
   </ItemGroup>
+	
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y /d &quot;$(TargetDir)$(TargetFileName)&quot; &quot;$(ProjectDir)..\..\..\..\BepInEx\patchers&quot;" />
+  </Target>
 
 </Project>
