@@ -146,18 +146,9 @@ public class EntryPoint : BasePatcher
         return Process.Start(processStartInfo);
     }
 
-    // Bad and hacky way to retrieve the correct log file path
+    // diskLogListener.FullFilePath was removed in BepInEx 6
     private string GetLogOutputFilePath()
     {
-        return "C:\\Program Files\\Oculus\\Software\\Software\\orbus-online-llc-orbusvr\\BepInEx\\LogOutput.log";
-        foreach (var logListener in Logger.Listeners)
-        {
-            if (logListener is DiskLogListener diskLogListener)
-            {
-                return diskLogListener.ToString();
-            }
-        }
-
-        return "";
+        return "GAME_PATH\\BepInEx\\LogOutput.log";
     }
 }
